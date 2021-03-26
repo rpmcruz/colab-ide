@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="container">
+
+{% with messages = get_flashed_messages() %}
+{% for message in messages %}
+<div class="alert alert-danger" role="alert">{{ message }}</div>
+{% endfor %}
+{% endwith %}
+
+<form method="post">
+<div class="form-group">
+<label for="nmec">NMec</label>
+<input type="text" class="form-control" id="nmec" name="nmec" placeholder="2020xxxxx">
+</div>
+<button type="submit" class="btn btn-primary">Login</button>
+</form>
+</div>
+
+{% endblock content %}

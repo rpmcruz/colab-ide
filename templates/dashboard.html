@@ -1,0 +1,106 @@
+{% extends "layout.html" %}
+
+{% block title %}
+<h1 class="display-4">Colab IDE &mdash; Dashboard</h1>
+<p>Refresh is done automatically. No need for manual refresh.</p>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+
+<h5>Editor</h5>
+<div id="editor" style="position: relative; height:400px;">{{ code }}</div>
+
+<h5>Compiler Output</h5>
+<div id="alert" class="alert alert-secondary" role="alert">
+</div>
+
+<h5>Run Test</h5>
+<form>
+  <div class="form-group row">
+    <label for="stdin" class="col-sm-2 col-form-label">stdin:</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" id="stdin" value="">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label class="col-sm-2 col-form-label">stdout:</label>
+    <div class="col-sm-10">
+      <pre id="stdout"></pre>
+    </div>
+  </div>
+</form>
+
+
+
+<hr>
+<button onclick="clearSubmissions()" type="button" class="btn btn-outline-secondary">Clear Submissions</button>
+
+<p>Submissions by other students will show up below...</p>
+
+<div id="others"></div>
+</div>
+
+<script src="{{ url_for('static', filename='ace/ace.js') }}" type="text/javascript" charset="utf-8"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+var editor = ace.edit('editor');
+editor.session.setMode('ace/mode/c_cpp');
+editor.session.setOptions({ tabSize: 4, useSoftTabs: true });
+
+function update_my_submission() {
+    $.post('/submit-code', {'code': editor.getValue(), 'stdin': $('#stdin').val()},
+        function(data) {
+            if(data.compile_code == 0)
+                $("#alert").attr('class', 'alert alert-success');
+            else
+                $("#alert").attr('class', 'alert alert-danger');
+            $('#alert').html(data.compile_output);
+            $('#stdout').html(data.program_output);
+        }
+    );
+    editor.session.getUndoManager().markClean();
+}
+
+function update_others_submissions() {
+    $.ajax({
+        url: '/get-submissions',
+        success: function(submissions) {
+            $('#others div').empty();
+            for(var i = 0; i < submissions.length; i++) {
+                student_name = submissions[i].name;
+                editor_id = 'editor-' + i;
+                $('#others').append('<div><h5>' + student_name + '</h5><div id="' + editor_id + '" style="position: relative; height:300px;"></div></div>\n');
+                var new_editor = ace.edit(editor_id);
+                new_editor.session.setMode('ace/mode/c_cpp');
+                new_editor.session.setOptions({ tabSize: 4, useSoftTabs: true });
+                new_editor.session.setValue(submissions[i].code);
+                new_editor.setReadOnly(true);
+            }
+        },
+    });
+}
+
+$(document).ready(function(){
+    setInterval(function(){
+        update_others_submissions();
+    }, 10000);
+});
+
+function clearSubmissions() {
+    $.get('/clear-submissions');
+}
+
+var change_timeout = 0;
+
+function update_my_submission_delay() {
+    if(change_timeout)
+        clearTimeout(change_timeout);
+    change_timeout = setTimeout(update_my_submission, 2000);
+}
+
+$('#stdin').change(update_my_submission_delay);
+editor.on('change', update_my_submission_delay);
+</script>
+{% endblock content %}
