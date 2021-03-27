@@ -1,8 +1,4 @@
 from flask import Flask, render_template, request, session, redirect, url_for, flash, jsonify
-from pygments import highlight
-from pygments.lexers import CppLexer
-from pygments.formatters import HtmlFormatter
-from jinja2 import Markup
 import evaluate
 
 app = Flask(__name__)
