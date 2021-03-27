@@ -8,4 +8,4 @@ Screenshot:
 
 ![Screenshot](screenshot.gif)
 
-Ricardo Cruz <ricardo.pdm.cruz@gmail.com>
+Ricardo Cruz &lt;ricardo.pdm.cruz@gmail.com&gt;
